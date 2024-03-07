@@ -10,6 +10,7 @@ services:
       - type: volume
         source: savannah_data
         target: /var/www/html/server/data
+      # Uncomment below to activate
       # - type: bind
       #   source: ./SavannahAPI/doc/FIRSTRUN
       #   target: /var/www/html/server/FIRSTRUN
@@ -18,6 +19,9 @@ services:
   savannah-api:
     build:
       context: ./SavannahAPI
+    depends_on:
+      savannah-api-init:
+        condition: service_completed_successfully
     ports:
       - target: 80
         published: 8080
@@ -28,11 +32,21 @@ services:
         source: savannah_data
         target: /var/www/html/server/data
 
-
   buildbot-master:
     build:
       context: ./octave-buildbot
       dockerfile: master/Dockerfile
+    command:
+      - /usr/bin/dumb-init
+      - --
+      - bash
+      - -c
+      - >-
+        mkdir -p /root/.ssh
+        && cp /buildbot/master/authorized_keys /root/.ssh/
+        && chown root:root /root/.ssh/authorized_keys
+        && chmod 600       /root/.ssh/authorized_keys
+        && exec /buildbot/defaults/start_up.sh
     ports:
       - target: 8010
         published: 8010  # Buildbot master web interface
@@ -59,7 +73,7 @@ services:
         read_only: true
       - type: bind
         source: ./config/buildbot/authorized_keys
-        target: /root/.ssh/authorized_keys
+        target: /buildbot/master/authorized_keys
         read_only: true
 
   web:
