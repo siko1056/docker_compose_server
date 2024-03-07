@@ -1,0 +1,6 @@
+[submodule "SavannahAPI"]
+	path = SavannahAPI
+	url = https://github.com/gnu-octave/SavannahAPI.git
+[submodule "octave-buildbot"]
+	path = octave-buildbot
+	url = https://github.com/gnu-octave/octave-buildbot
